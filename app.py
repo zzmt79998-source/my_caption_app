@@ -1,9 +1,10 @@
 import sys
-# အရေးကြီး: Recursion limit ကို တိုးပေးထားခြင်းက Error မတက်အောင် ကာကွယ်ပေးပါတယ်
+# Recursion Error မတက်အောင် Limit ကို တိုးပေးထားခြင်း
 sys.setrecursionlimit(5000)
 
 import streamlit as st
 import whisper
+# moviepy ကို သေချာတင်နိုင်အောင် import လုပ်ပုံ
 from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip
 
 st.title("Burmese Auto-Caption Generator")
@@ -14,4 +15,5 @@ if uploaded_file is not None:
     st.video(uploaded_file)
     st.write("Processing... please wait.")
     
-    # ဤနေရာတွင် အစ်ကို့ရဲ့ Whisper
+    # ဤနေရာတွင် အစ်ကို့ရဲ့ Whisper ကုဒ်များကို ဆက်လက်ရေးသားနိုင်ပါသည်။
+    # st.success("Video processed successfully!")
