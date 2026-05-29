@@ -2,17 +2,12 @@ import sys
 sys.setrecursionlimit(5000)
 
 import streamlit as st
-import whisper
+from moviepy.editor import VideoFileClip
 
-# ဒီနေရာမှာ import လုပ်ပုံကို နည်းနည်းပြင်ပေးပါ
-try:
-    from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip
-except ImportError:
-    st.error("Moviepy မရှိသေးပါ၊ ကျေးဇူးပြု၍ requirements.txt ကို စစ်ဆေးပါ")
-
-st.title("Burmese Auto-Caption Generator")
+st.title("Test App: Moviepy check")
 
 uploaded_file = st.file_uploader("Choose a video...", type=["mp4"])
+
 if uploaded_file is not None:
     st.video(uploaded_file)
-    st.write("Processing...")
+    st.write("Moviepy import success!")
