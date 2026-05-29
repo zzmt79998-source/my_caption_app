@@ -1,21 +1,24 @@
 import streamlit as st
-import subprocess
-import sys
+from moviepy.editor import VideoFileClip
+import os
 
-# လိုအပ်တဲ့ library တွေကို အခုချက်ချင်း install လုပ်ခိုင်းခြင်း
-def install(package):
-    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-
-try:
-    from moviepy.editor import VideoFileClip
-except ImportError:
-    st.warning("MoviePy ကို install လုပ်နေပါပြီ၊ ခဏစောင့်ပေးပါ...")
-    install("moviepy")
-    from moviepy.editor import VideoFileClip
-
+# App ရဲ့ ခေါင်းစဉ်
 st.title("Burmese Auto-Caption Generator")
-st.success("MoviePy အဆင်သင့်ဖြစ်ပါပြီ!")
 
-uploaded_file = st.file_uploader("Choose a video...", type=["mp4"])
+# ဗီဒီယို ဖိုင်တင်ခြင်း
+uploaded_file = st.file_uploader("ဗီဒီယိုဖိုင်ကို ရွေးချယ်ပါ (MP4)...", type=["mp4"])
+
 if uploaded_file is not None:
-    st.video(uploaded_file)
+    # ဖိုင်ကို ခေတ္တ သိမ်းဆည်းခြင်း
+    with open("temp_video.mp4", "wb") as f:
+        f.write(uploaded_file.getbuffer())
+    
+    st.video("temp_video.mp4")
+    st.success("ဗီဒီယိုဖိုင် အောင်မြင်စွာ တင်ပြီးပါပြီ။")
+
+    # ဒီနေရာမှာ နောက်ထပ် လုပ်ဆောင်ချက်များ (ဥပမာ- Caption ထုတ်ခြင်း) ကို ဆက်ရေးပါ
+    if st.button("Processing..."):
+        st.info("ဗီဒီယိုကို စတင် လုပ်ဆောင်နေပါပြီ...")
+        # MoviePy ကို ဒီနေရာမှာ သုံးလို့ရပါပြီ
+        video = VideoFileClip("temp_video.mp4")
+        st.write(f"ဗီဒီယိုကြာချိန်: {video.duration} စက္ကန့်")
