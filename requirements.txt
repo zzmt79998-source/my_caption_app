@@ -1,4 +1,4 @@
 streamlit
-moviepy
-imageio
-imageio-ffmpeg
+moviepy==1.0.3
+imageio==2.15.0
+imageio-ffmpeg==0.4.7
