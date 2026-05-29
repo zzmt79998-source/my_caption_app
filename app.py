@@ -1,22 +1,21 @@
-import sys
-sys.setrecursionlimit(5000)
-
 import streamlit as st
+import subprocess
+import sys
 
-# MoviePy ကို ဒီလိုပုံစံနဲ့ အရင်စမ်းပါ
+# လိုအပ်တဲ့ library တွေကို အခုချက်ချင်း install လုပ်ခိုင်းခြင်း
+def install(package):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
 try:
     from moviepy.editor import VideoFileClip
-    MOVIEPY_AVAILABLE = True
 except ImportError:
-    MOVIEPY_AVAILABLE = False
+    st.warning("MoviePy ကို install လုပ်နေပါပြီ၊ ခဏစောင့်ပေးပါ...")
+    install("moviepy")
+    from moviepy.editor import VideoFileClip
 
 st.title("Burmese Auto-Caption Generator")
+st.success("MoviePy အဆင်သင့်ဖြစ်ပါပြီ!")
 
-if MOVIEPY_AVAILABLE:
-    st.success("MoviePy is correctly installed!")
-    uploaded_file = st.file_uploader("Choose a video...", type=["mp4"])
-    if uploaded_file is not None:
-        st.video(uploaded_file)
-        st.write("Processing video...")
-else:
-    st.error("MoviePy ကို မတွေ့ရှိပါ။ ကျေးဇူးပြု၍ requirements.txt ကို ပြန်စစ်ပါ။")
+uploaded_file = st.file_uploader("Choose a video...", type=["mp4"])
+if uploaded_file is not None:
+    st.video(uploaded_file)
