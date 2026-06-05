@@ -1,38 +1,30 @@
 import streamlit as st
-from moviepy.editor import VideoFileClip
-import os
+import whisper
+from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip
 
-# App ခေါင်းစဉ်
 st.title("Burmese Auto-Caption Generator")
 
-# ဗီဒီယိုဖိုင် တင်ရန်
-uploaded_file = st.file_uploader("ဗီဒီယိုဖိုင်ကို ရွေးချယ်ပါ (MP4)...", type=["mp4"])
+uploaded_file = st.file_uploader("ဗီဒီယိုဖိုင်ကို ရွေးချယ်ပါ", type=["mp4"])
 
 if uploaded_file is not None:
-    # ဗီဒီယိုကို ခေတ္တသိမ်းခြင်း
-    temp_file_path = "temp_video.mp4"
-    with open(temp_file_path, "wb") as f:
+    with open("temp_video.mp4", "wb") as f:
         f.write(uploaded_file.getbuffer())
     
-    st.video(temp_file_path)
-    st.success("ဗီဒီယိုဖိုင် အောင်မြင်စွာ တင်ပြီးပါပြီ။")
-
-    # Processing ခလုတ်
-    if st.button("ဗီဒီယိုကို စတင်လုပ်ဆောင်ရန်"):
-        try:
-            st.info("ဗီဒီယိုကို စတင် လုပ်ဆောင်နေပါပြီ...")
-            
-            # MoviePy ကို သုံးခြင်း
-            video = VideoFileClip(temp_file_path)
-            
-            # ရလဒ်ပြသခြင်း
-            st.write(f"ဗီဒီယိုကြာချိန်: {video.duration:.2f} စက္ကန့်")
-            
-            # လုပ်ဆောင်ချက်ပြီးဆုံးကြောင်း
-            st.success("ဗီဒီယို Processing ပြီးဆုံးပါပြီ!")
-            
-            # ဗီဒီယိုကို ပိတ်ပေးခြင်း (Memory သန့်ရှင်းရန်)
-            video.close()
-            
-        except Exception as e:
-            st.error(f"Error ဖြစ်ပေါ်နေသည်: {e}")
+    st.video("temp_video.mp4")
+    
+    # စာတန်းချိန်ညှိချက်များ
+    color = st.color_picker("စာတန်းအရောင် ရွေးပါ", "#FFFF00")
+    font_size = st.slider("စာတန်း အရွယ်အစား", 20, 100, 50)
+    
+    if st.button("ဗီဒီယိုကို စတင် လုပ်ဆောင်ရန်"):
+        with st.spinner('AI စာတန်းထိုးနေပါပြီ... ခဏစောင့်ပါ'):
+            try:
+                # 1. Whisper Model ကို load လုပ်ခြင်း
+                model = whisper.load_model("base")
+                result = model.transcribe("temp_video.mp4")
+                
+                st.success("စာတန်းထိုးပြီးပါပြီ!")
+                st.write(result["text"]) # ရလာတဲ့ စာသားကိုပြခြင်း
+                
+            except Exception as e:
+                st.error(f"Error တက်နေသည်: {e}")
