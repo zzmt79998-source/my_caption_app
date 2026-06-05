@@ -1,10 +1,8 @@
 import streamlit as st
 import whisper
-import cv2
-import numpy as np
 import os
 
-# Whisper model ကို load လုပ်မယ်
+# Model ကို load လုပ်မယ်
 @st.cache_resource
 def load_whisper_model():
     return whisper.load_model("base")
@@ -20,15 +18,10 @@ if uploaded_file is not None:
     
     st.video(video_path)
 
+    # ခလုတ်ကို ဒီမှာ သေချာ ထည့်ထားပါတယ်
     if st.button("စာတန်းစထိုးမည်"):
         with st.spinner("AI စာတန်းထိုးနေပြီ..."):
-            # ၁။ Whisper နဲ့ အသံဖမ်းမယ်
             model = load_whisper_model()
             result = model.transcribe(video_path)
-            caption_text = result['text']
-            
-            # ၂။ ရလဒ်ကို ဖော်ပြပေးမယ်
             st.success("စာသားရရှိပါပြီ!")
-            st.text_area("ရရှိလာသော စာသား -", caption_text)
-            
-            # နောက်ထပ် ဗီဒီယို processing လုပ်ချင်ရင် ဒီအောက်မှာ ဆက်ရေးလို့ရပါတယ်
+            st.write(result['text'])
