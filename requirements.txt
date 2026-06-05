@@ -2,3 +2,4 @@ streamlit
 openai-whisper
 opencv-python-headless
 numpy
+Pillow
