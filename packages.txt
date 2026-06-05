@@ -1,5 +1,4 @@
-ffmpeg
-libsm6
-libxext6
-libxrender-dev
-libx11-dev
+streamlit
+openai-whisper
+moviepy
+imageio-ffmpeg
