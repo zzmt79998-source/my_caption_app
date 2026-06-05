@@ -1,45 +1,74 @@
 import streamlit as st
 import whisper
+import cv2
+import numpy as np
 import os
+from PIL import Image, ImageDraw, ImageFont
 
-# FFmpeg ကို စနစ်ထဲမှာ ရှာတွေ့အောင် လမ်းကြောင်း ညွှန်ပေးခြင်း
+# FFmpeg setup
 os.environ["PATH"] += os.pathsep + "/usr/bin"
 
-# Whisper Model ကို Cache လုပ်၍ အမြန်တင်ခြင်း
 @st.cache_resource
 def load_whisper_model():
     return whisper.load_model("base")
 
-st.title("Burmese Auto-Caption Generator")
+st.set_page_config(page_title="Burmese Auto Captions", layout="wide")
+st.title("✨ Burmese Auto Captions Pro")
 
-# 1. ဗီဒီယိုဖိုင်တင်ရန်
-uploaded_file = st.file_uploader("ဗီဒီယိုဖိုင်တင်ပေးပါ (MP4 format)", type=["mp4"])
+# Sidebar - CapCut Pro Style Tools
+st.sidebar.header("🎛️ CapCut Pro Style Tools")
+text_color = st.sidebar.color_picker("Text Color (စာလုံးအရောင်)", "#FFFF00")
+stroke_color = st.sidebar.color_picker("Stroke Color (ဘောင်အရောင်)", "#00FF00")
+font_size = st.sidebar.slider("Font Size", 20, 100, 50)
+stroke_width = st.sidebar.slider("Stroke Width", 1, 10, 3)
 
-if uploaded_file is not None:
-    # 2. ဗီဒီယိုဖိုင်ကို သိမ်းဆည်းခြင်း
-    video_path = "temp_video.mp4"
+def render_caption(frame, text, color, stroke_col, size, stroke_w):
+    img_pil = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+    draw = ImageDraw.Draw(img_pil)
+    try:
+        font = ImageFont.truetype("Pyidaungsu.ttf", size)
+    except:
+        font = ImageFont.load_default()
+    
+    # Text Centering Logic
+    w, h = img_pil.size
+    draw.text((w/2, h-100), text, font=font, fill=color, 
+              stroke_width=stroke_w, stroke_fill=stroke_col, anchor="mm")
+    return cv2.cvtColor(np.array(img_pil), cv2.COLOR_RGB2BGR)
+
+# Main UI
+uploaded_file = st.file_uploader("ဗီဒီယိုဖိုင်တင်ရန်", type=["mp4"])
+
+if uploaded_file:
+    video_path = "input.mp4"
     with open(video_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
     
     st.video(video_path)
-    st.success("ဗီဒီယိုဖိုင် တင်ပြီးပါပြီ။")
 
-    # 3. စာတန်းထုတ်ရန် ခလုတ်
-    if st.button("စာတန်းစထိုးမည်"):
-        with st.spinner("AI စာတန်းထိုးနေပြီ... ခဏစောင့်ပေးပါ (ပထမဆုံးအကြိမ်ဆို ကြာနိုင်ပါတယ်)..."):
-            try:
-                # Whisper model load လုပ်ခြင်း
-                model = load_whisper_model()
+    if st.button("🚀 စာတန်းထိုးပြီး Export Video လုပ်မည်"):
+        with st.spinner("AI စာတန်းထိုးနေပြီ..."):
+            model = load_whisper_model()
+            result = model.transcribe(video_path, language="my")
+            
+            cap = cv2.VideoCapture(video_path)
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            out = cv2.VideoWriter('output.mp4', cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
+            
+            segments = result['segments']
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if not ret: break
                 
-                # အသံကို စာသားဖြစ်အောင် ပြောင်းခြင်း
-                result = model.transcribe(video_path)
-                
-                # ရလဒ်ကို ဖော်ပြပေးခြင်း
-                st.subheader("ရရှိလာသော စာသားများ:")
-                st.text_area("စာသားများ -", value=result['text'], height=200)
-                
-            except Exception as e:
-                st.error(f"Error ဖြစ်သွားပါသည်: {e}")
-
-# အသုံးပြုသူအတွက် ရှင်းလင်းချက်
-st.info("မှတ်ချက်: အလုပ်မလုပ်သေးပါက packages.txt တွင် ffmpeg ရှိမရှိ စစ်ဆေးပါ။")
+                time = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000
+                for s in segments:
+                    if s['start'] <= time <= s['end']:
+                        frame = render_caption(frame, s['text'], text_color, stroke_color, font_size, stroke_width)
+                out.write(frame)
+            
+            cap.release()
+            out.release()
+            st.success("Export ပြီးပါပြီ!")
+            st.download_button("📥 ဒေါင်းလုဒ်လုပ်ရန်", open("output.mp4", "rb"), "captioned_video.mp4")
