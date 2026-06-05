@@ -1,4 +1,4 @@
 streamlit
 openai-whisper
-moviepy
-imageio-ffmpeg
+opencv-python
+numpy
